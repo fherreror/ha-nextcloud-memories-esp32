@@ -3,13 +3,20 @@
     "step": {
       "user": {
         "title": "Nextcloud Memories",
-        "description": "Connect Home Assistant to your Nextcloud Memories instance.",
+        "description": "Connect Home Assistant to your Nextcloud Memories instance. The two URL fields serve different purposes: Nextcloud supplies photos, while Home Assistant serves prepared photos to the ESP32.",
         "data": {
           "base_url": "Nextcloud base URL",
           "username": "Username",
           "api_token": "API token",
           "verify_ssl": "Verify SSL certificate",
           "image_base_url": "Image base URL"
+        },
+        "data_description": {
+          "base_url": "Address of your Nextcloud server as reached from Home Assistant, without /apps/memories (for example, https://cloud.example.com).",
+          "username": "Nextcloud user with access to the albums you want to display.",
+          "api_token": "Prefer a Nextcloud app password/token instead of your main account password.",
+          "verify_ssl": "Check the server's HTTPS certificate. Disable only if you understand the security implications.",
+          "image_base_url": "Address of Home Assistant reachable from the ESP32 on your network. The frame downloads processed photos from this address, not from Nextcloud."
         }
       }
     },
@@ -25,60 +32,79 @@
   "options": {
     "step": {
       "init": {
-        "title": "Frame Devices",
-        "description": "Choose action for logical frame devices. Existing devices: {devices}",
+        "title": "Frame devices",
+        "description": "Choose an action for your picture frames. Existing frames: {devices}",
         "data": {
           "image_base_url": "Image base URL",
           "action": "Action",
-          "target_device_key": "Target device",
-          "device_key": "Device key",
-          "delete_device": "Delete this device",
-          "name": "Friendly name",
-          "album_ids": "Album IDs",
-          "width": "Width",
-          "height": "Height",
-          "randomize": "Randomize",
-          "max_photos": "Max photos",
-          "max_cache_files": "Max cache files",
-          "prefetch_each_side": "Prefetch each side",
-          "rotation_minutes": "Rotation minutes"
+          "target_device_key": "Target frame"
         },
         "data_description": {
-          "target_device_key": "Only needed for Edit or Delete."
+          "image_base_url": "Home Assistant URL accessible from the ESP32. Change it if frames cannot download their prepared photos.",
+          "action": "Create a frame, edit an existing frame, or remove a frame configuration.",
+          "target_device_key": "Select the existing frame you want to edit or delete. This field appears only for those actions."
         }
       },
       "device": {
-        "title": "Frame Device",
-        "description": "Mode: {mode} | Device: {device}",
+        "title": "Frame settings",
+        "description": "Choose the photo source and display settings. Selecting a presence entity reveals optional ON/OFF conditions for automatically enabling the LCD backlight.",
         "data": {
-          "device_key": "Device key",
-          "esp_device_id": "ESP device id",
+          "device_key": "Frame key",
+          "esp_device_id": "ESPHome device ID",
           "name": "Friendly name",
-          "album_ids": "Album IDs",
-          "width": "Width",
-          "height": "Height",
-          "randomize": "Randomize",
-          "max_photos": "Max photos",
-          "max_cache_files": "Max cache files",
-          "prefetch_each_side": "Prefetch each side",
-          "rotation_minutes": "Rotation minutes",
+          "album_ids": "Albums",
+          "width": "Image width",
+          "height": "Image height",
+          "image_format": "Image format",
+          "randomize": "Shuffle photos",
+          "max_photos": "Max photos per album",
+          "max_cache_files": "Max cached images",
+          "prefetch_each_side": "Prefetch on each side",
+          "rotation_minutes": "Rotation interval (minutes)",
           "presence_entity_id": "Presence entity for LCD backlight",
           "presence_require_on_entities": "Entities required ON",
           "presence_require_off_entities": "Entities required OFF"
         },
         "data_description": {
-          "presence_entity_id": "When presence is ON, automatically turn on the ESPHome LCD backlight; OFF always turns it off.",
-          "presence_require_on_entities": "Optional: all selected entities must be ON to enable automatic turn-on.",
-          "presence_require_off_entities": "Optional: all selected entities must be OFF to enable automatic turn-on."
+          "device_key": "Unique, stable identifier for this frame within Nextcloud Memories. Avoid renaming an existing frame unless necessary.",
+          "esp_device_id": "Select the existing ESPHome device with the display. This does not install or modify ESP32 firmware.",
+          "name": "Display name used for this frame in Home Assistant.",
+          "album_ids": "Select one or more Nextcloud Memories albums. Their photos are combined for this frame.",
+          "width": "Output image width in pixels. Match the resolution supported by your screen.",
+          "height": "Output image height in pixels. Match the resolution supported by your screen.",
+          "image_format": "Choose the format supported by your ESP32 display firmware: baseline JPEG or 24-bit BMP.",
+          "randomize": "Shuffle photos instead of keeping the album order.",
+          "max_photos": "Maximum number of photos retrieved from each selected album.",
+          "max_cache_files": "Maximum number of processed image files retained in this frame's cache.",
+          "prefetch_each_side": "How many previous and next photos to prepare in advance for faster navigation.",
+          "rotation_minutes": "Minutes between automatic photo changes (1–30).",
+          "presence_entity_id": "Optional presence sensor (binary_sensor or input_boolean). When ON, the backlight may turn on if all conditions below are satisfied; when OFF, the backlight always turns off. The ESPHome device needs a backlight switch.",
+          "presence_require_on_entities": "Optional. With presence ON, ALL selected entities must also be ON before the backlight turns on. Unknown or unavailable states block automatic turn-on.",
+          "presence_require_off_entities": "Optional. With presence ON, ALL selected entities must be OFF before the backlight turns on. These conditions never prevent turning the backlight OFF when presence ends."
         }
       }
     },
     "error": {
       "invalid_album_ids": "Select at least one album",
-      "invalid_device_key": "Invalid device key",
-      "required_target_device": "Select a target device",
-      "duplicate_esp_device_id": "ESP device id already assigned",
+      "invalid_device_key": "Invalid frame key",
+      "required_target_device": "Select a target frame",
+      "duplicate_esp_device_id": "This ESPHome device is already assigned",
       "conflicting_presence_conditions": "The same entity cannot be required ON and OFF"
+    }
+  },
+  "selector": {
+    "frame_action": {
+      "options": {
+        "create": "Create a frame",
+        "edit": "Edit a frame",
+        "delete": "Delete a frame"
+      }
+    },
+    "frame_image_format": {
+      "options": {
+        "jpeg": "JPEG (baseline)",
+        "bmp24": "BMP (24-bit)"
+      }
     }
   }
 }
