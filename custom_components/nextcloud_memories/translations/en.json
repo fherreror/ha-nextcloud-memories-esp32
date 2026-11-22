@@ -42,6 +42,9 @@
           "max_cache_files": "Max cache files",
           "prefetch_each_side": "Prefetch each side",
           "rotation_minutes": "Rotation minutes"
+        },
+        "data_description": {
+          "target_device_key": "Only needed for Edit or Delete."
         }
       },
       "device": {
@@ -59,7 +62,14 @@
           "max_cache_files": "Max cache files",
           "prefetch_each_side": "Prefetch each side",
           "rotation_minutes": "Rotation minutes",
-          "presence_entity_id": "Presence entity for LCD backlight"
+          "presence_entity_id": "Presence entity for LCD backlight",
+          "presence_require_on_entities": "Entities required ON",
+          "presence_require_off_entities": "Entities required OFF"
+        },
+        "data_description": {
+          "presence_entity_id": "When presence is ON, automatically turn on the ESPHome LCD backlight; OFF always turns it off.",
+          "presence_require_on_entities": "Optional: all selected entities must be ON to enable automatic turn-on.",
+          "presence_require_off_entities": "Optional: all selected entities must be OFF to enable automatic turn-on."
         }
       }
     },
@@ -67,7 +77,8 @@
       "invalid_album_ids": "Select at least one album",
       "invalid_device_key": "Invalid device key",
       "required_target_device": "Select a target device",
-      "duplicate_esp_device_id": "ESP device id already assigned"
+      "duplicate_esp_device_id": "ESP device id already assigned",
+      "conflicting_presence_conditions": "The same entity cannot be required ON and OFF"
     }
   }
 }
