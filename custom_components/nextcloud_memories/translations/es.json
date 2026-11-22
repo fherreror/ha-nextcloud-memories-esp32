@@ -1,0 +1,110 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nextcloud Memories",
+        "description": "Conecta Home Assistant con Nextcloud Memories. Las dos URL tienen funciones distintas: Nextcloud proporciona las fotos y Home Assistant sirve las imágenes preparadas al ESP32.",
+        "data": {
+          "base_url": "URL base de Nextcloud",
+          "username": "Usuario",
+          "api_token": "Token de API",
+          "verify_ssl": "Verificar certificado SSL",
+          "image_base_url": "URL base de las imágenes"
+        },
+        "data_description": {
+          "base_url": "Dirección del servidor Nextcloud accesible desde Home Assistant, sin /apps/memories (por ejemplo, https://nube.ejemplo.com).",
+          "username": "Usuario de Nextcloud con acceso a los álbumes que quieras mostrar.",
+          "api_token": "Es preferible utilizar una contraseña de aplicación de Nextcloud, en lugar de la contraseña habitual de tu cuenta.",
+          "verify_ssl": "Comprueba el certificado HTTPS del servidor. Desactívalo solo si conoces las implicaciones de seguridad.",
+          "image_base_url": "Dirección de Home Assistant accesible desde el ESP32. El marco descarga las fotos procesadas desde esta dirección, no directamente desde Nextcloud."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No se puede conectar",
+      "invalid_auth": "Error de autenticación",
+      "unknown": "Error inesperado"
+    },
+    "abort": {
+      "already_configured": "Esta URL de Nextcloud ya está configurada"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Marcos digitales",
+        "description": "Elige qué quieres hacer con tus marcos. Marcos existentes: {devices}",
+        "data": {
+          "image_base_url": "URL base de las imágenes",
+          "action": "Acción",
+          "target_device_key": "Marco de destino"
+        },
+        "data_description": {
+          "image_base_url": "URL de Home Assistant accesible desde el ESP32. Cámbiala si los marcos no pueden descargar sus imágenes.",
+          "action": "Crear un marco, modificar uno existente o eliminar su configuración.",
+          "target_device_key": "Selecciona el marco que quieras editar o eliminar. Este campo solo aparece al elegir esas acciones."
+        }
+      },
+      "device": {
+        "title": "Configuración del marco",
+        "description": "Elige los álbumes y los ajustes de visualización. Al seleccionar una entidad de presencia aparecerán las condiciones opcionales de encendido y apagado para la retroiluminación de la pantalla.",
+        "data": {
+          "device_key": "Identificador del marco",
+          "esp_device_id": "Identificador del dispositivo ESPHome",
+          "name": "Nombre descriptivo",
+          "album_ids": "Álbumes",
+          "width": "Anchura de imagen",
+          "height": "Altura de imagen",
+          "image_format": "Formato de imagen",
+          "randomize": "Mezclar fotografías",
+          "max_photos": "Máximo de fotografías por álbum",
+          "max_cache_files": "Máximo de imágenes en caché",
+          "prefetch_each_side": "Precarga en cada dirección",
+          "rotation_minutes": "Intervalo de rotación (minutos)",
+          "presence_entity_id": "Entidad de presencia para la retroiluminación",
+          "presence_require_on_entities": "Entidades que deben estar encendidas (ON)",
+          "presence_require_off_entities": "Entidades que deben estar apagadas (OFF)"
+        },
+        "data_description": {
+          "device_key": "Identificador único y estable de este marco dentro de Nextcloud Memories. Evita cambiarlo en un marco existente salvo que sea necesario.",
+          "esp_device_id": "Selecciona el dispositivo ESPHome que tiene la pantalla. No instala ni modifica el firmware del ESP32.",
+          "name": "Nombre con el que se mostrará el marco en Home Assistant.",
+          "album_ids": "Selecciona uno o varios álbumes de Nextcloud Memories. Sus fotografías se combinarán en este marco.",
+          "width": "Anchura final de las imágenes en píxeles. Debe coincidir con la resolución admitida por la pantalla.",
+          "height": "Altura final de las imágenes en píxeles. Debe coincidir con la resolución admitida por la pantalla.",
+          "image_format": "Elige el formato que admite el firmware de tu pantalla ESP32: JPEG estándar o BMP de 24 bits.",
+          "randomize": "Muestra las fotografías en orden aleatorio en lugar de seguir el orden del álbum.",
+          "max_photos": "Número máximo de fotografías que se recuperan de cada álbum seleccionado.",
+          "max_cache_files": "Número máximo de archivos de imagen procesada que se conservan en la caché del marco.",
+          "prefetch_each_side": "Cantidad de fotografías anteriores y siguientes que se preparan de antemano para acelerar la navegación.",
+          "rotation_minutes": "Minutos entre cambios automáticos de fotografía (de 1 a 30).",
+          "presence_entity_id": "Sensor opcional de presencia (binary_sensor o input_boolean). Si está en ON, la pantalla podrá encenderse cuando se cumplan todas las condiciones siguientes; si pasa a OFF, la retroiluminación se apaga siempre. El dispositivo ESPHome debe disponer de un interruptor de retroiluminación.",
+          "presence_require_on_entities": "Opcional. Con presencia en ON, TODAS las entidades seleccionadas aquí deben estar en ON para encender la retroiluminación. Los estados desconocidos o no disponibles impiden el encendido automático.",
+          "presence_require_off_entities": "Opcional. Con presencia en ON, TODAS las entidades seleccionadas aquí deben estar en OFF para encender la retroiluminación. Estas condiciones nunca impiden apagarla cuando deja de detectarse presencia."
+        }
+      }
+    },
+    "error": {
+      "invalid_album_ids": "Selecciona al menos un álbum",
+      "invalid_device_key": "Identificador del marco no válido",
+      "required_target_device": "Selecciona un marco",
+      "duplicate_esp_device_id": "Este dispositivo ESPHome ya está asignado",
+      "conflicting_presence_conditions": "Una misma entidad no puede exigirse simultáneamente encendida y apagada"
+    }
+  },
+  "selector": {
+    "frame_action": {
+      "options": {
+        "create": "Crear marco",
+        "edit": "Editar marco",
+        "delete": "Eliminar marco"
+      }
+    },
+    "frame_image_format": {
+      "options": {
+        "jpeg": "JPEG (estándar)",
+        "bmp24": "BMP (24 bits)"
+      }
+    }
+  }
+}
