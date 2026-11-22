@@ -9,6 +9,7 @@
 - Translate create/edit/delete actions and image-format choices while preserving their internal values.
 - Declare Home Assistant 2026.11.0 as the minimum supported version in Marketplace/HACS metadata.
 - Keep presence prerequisite selectors conditional on selecting a presence entity.
+- Hide synthetic dot-prefixed public-link albums in the frame album selector, without changing saved album assignments.
 
 ## [0.1.0] - 2026-11-22
 
