@@ -82,6 +82,6 @@ def test_on_gate_is_independent_of_off():
         for n in calls
     )
     assert any(
-        isinstance(n, ast.Attribute) and n.func.attr == "async_call"
+        isinstance(n.func, ast.Attribute) and n.func.attr == "async_call"
         for n in calls
     )
