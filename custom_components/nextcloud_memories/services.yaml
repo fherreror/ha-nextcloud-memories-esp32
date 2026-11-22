@@ -339,6 +339,26 @@ frame_device_set:
           filter:
             - domain: binary_sensor
             - domain: input_boolean
+    presence_require_on_entities:
+      name: Required ON entities
+      description: All selected entities must be ON for presence to turn the backlight on. Requires presence_entity_id.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: binary_sensor
+            - domain: input_boolean
+            - domain: switch
+    presence_require_off_entities:
+      name: Required OFF entities
+      description: All selected entities must be OFF for presence to turn the backlight on. Requires presence_entity_id.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: binary_sensor
+            - domain: input_boolean
+            - domain: switch
     target_current_text_entity:
       name: Current text entity
       selector:
