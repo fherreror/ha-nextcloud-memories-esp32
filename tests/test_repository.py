@@ -58,8 +58,8 @@ def test_spanish_translations_cover_source_keys():
                 assert_same_structure(value, translated[key])
             else:
                 assert isinstance(translated[key], str) and translated[key].strip()
-                assert set(re.findall(r"\\{(\\w+)\\}", value)) == set(
-                    re.findall(r"\\{(\\w+)\\}", translated[key])
+                assert set(re.findall(r"\{(\w+)\}", value)) == set(
+                    re.findall(r"\{(\w+)\}", translated[key])
                 )
 
     assert_same_structure(original, spanish)
