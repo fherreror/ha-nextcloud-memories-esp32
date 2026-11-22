@@ -20,6 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import NextcloudMemoriesClient
+from .album_visibility import is_album_visible_in_picker
 from .presence import normalize_condition_entities
 from .const import (
     CONF_API_TOKEN,
@@ -506,9 +507,9 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
 
         options: dict[str, str] = {}
         for album in albums:
-            aid = str(album.get("id") or "").strip()
-            if not aid:
+            if not is_album_visible_in_picker(album):
                 continue
+            aid = str(album.get("id") or "").strip()
             name = str(album.get("name") or aid)
             options[aid] = f"{name} ({aid})"
         return options
