@@ -1,0 +1,73 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nextcloud Memories",
+        "description": "Connect Home Assistant to your Nextcloud Memories instance.",
+        "data": {
+          "base_url": "Nextcloud base URL",
+          "username": "Username",
+          "api_token": "API token",
+          "verify_ssl": "Verify SSL certificate",
+          "image_base_url": "Image base URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Nextcloud URL is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Frame Devices",
+        "description": "Choose action for logical frame devices. Existing devices: {devices}",
+        "data": {
+          "image_base_url": "Image base URL",
+          "action": "Action",
+          "target_device_key": "Target device",
+          "device_key": "Device key",
+          "delete_device": "Delete this device",
+          "name": "Friendly name",
+          "album_ids": "Album IDs",
+          "width": "Width",
+          "height": "Height",
+          "randomize": "Randomize",
+          "max_photos": "Max photos",
+          "max_cache_files": "Max cache files",
+          "prefetch_each_side": "Prefetch each side",
+          "rotation_minutes": "Rotation minutes"
+        }
+      },
+      "device": {
+        "title": "Frame Device",
+        "description": "Mode: {mode} | Device: {device}",
+        "data": {
+          "device_key": "Device key",
+          "esp_device_id": "ESP device id",
+          "name": "Friendly name",
+          "album_ids": "Album IDs",
+          "width": "Width",
+          "height": "Height",
+          "randomize": "Randomize",
+          "max_photos": "Max photos",
+          "max_cache_files": "Max cache files",
+          "prefetch_each_side": "Prefetch each side",
+          "rotation_minutes": "Rotation minutes",
+          "presence_entity_id": "Presence entity for LCD backlight"
+        }
+      }
+    },
+    "error": {
+      "invalid_album_ids": "Select at least one album",
+      "invalid_device_key": "Invalid device key",
+      "required_target_device": "Select a target device",
+      "duplicate_esp_device_id": "ESP device id already assigned"
+    }
+  }
+}
