@@ -13,5 +13,5 @@
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/fherreror/ha-nextcloud-memories-esp32/issues",
-  "version": "0.1.1"
+  "version": "0.1.1b1"
 }
