@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.1.1] - Unreleased
+
+- Add Spanish translations for setup and frame configuration forms.
+- Explain frame options, presence backlight behavior, and ON/OFF prerequisites in both languages.
+- Translate create/edit/delete actions and image-format choices while preserving their internal values.
+- Declare Home Assistant 2026.11.0 as the minimum supported version in Marketplace/HACS metadata.
+- Keep presence prerequisite selectors conditional on selecting a presence entity.
+
 ## [0.1.0] - 2026-11-22
 
 First public release of the Nextcloud Memories ESP32 integration for Home Assistant.
