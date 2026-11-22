@@ -1,0 +1,383 @@
+get_albums:
+  name: Get albums
+  description: Returns albums from Nextcloud Memories.
+  fields:
+    entry_id:
+      name: Entry ID
+      description: Optional config entry ID if you have multiple Nextcloud Memories entries.
+      selector:
+        text:
+    include_raw:
+      name: Include raw
+      description: Include full raw album payloads.
+      default: false
+      selector:
+        boolean:
+
+get_photo_list:
+  name: Get photo list
+  description: Returns photos from one Memories album.
+  fields:
+    album_id:
+      name: Album ID
+      description: Album identifier returned by get_albums (recommended cluster_id like user/Example Album).
+      required: true
+      selector:
+        text:
+    max_photos:
+      name: Max photos
+      description: Maximum photos to return.
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 5000
+          mode: box
+    randomize:
+      name: Randomize
+      description: Shuffle the returned list.
+      default: false
+      selector:
+        boolean:
+    entry_id:
+      name: Entry ID
+      description: Optional config entry ID if you have multiple Nextcloud Memories entries.
+      selector:
+        text:
+    include_raw:
+      name: Include raw
+      description: Include full raw photo payloads.
+      default: false
+      selector:
+        boolean:
+
+get_photo:
+  name: Get photo
+  description: Downloads one photo preview and stores it under /config/www/nextcloud_memories.
+  fields:
+    fileid:
+      name: File ID
+      description: Photo fileid returned by get_photo_list.
+      required: true
+      selector:
+        number:
+          min: 1
+          mode: box
+    album_id:
+      name: Album ID
+      description: Optional album identifier (cluster_id like user/Example Album).
+      selector:
+        text:
+    etag:
+      name: ETag
+      description: Optional photo ETag (from get_photo_list). Improves cache correctness for preview endpoint.
+      selector:
+        text:
+    width:
+      name: Width
+      description: Requested preview width.
+      default: 800
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    height:
+      name: Height
+      description: Requested preview height.
+      default: 480
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    image_format:
+      name: Image format
+      description: Output format for stored image.
+      default: jpeg
+      selector:
+        select:
+          options:
+            - jpeg
+            - bmp24
+    filename:
+      name: Filename
+      description: Optional output file name (jpg).
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: Optional config entry ID if you have multiple Nextcloud Memories entries.
+      selector:
+        text:
+
+frame_refresh:
+  name: Frame refresh
+  description: Returns current/prev/next image URLs for one photoframe device, with per-device state and cache.
+  fields:
+    device_key:
+      name: Device key
+      description: Unique identifier for the photoframe device state.
+      required: true
+      selector:
+        text:
+    album_id:
+      name: Album ID
+      description: Optional single album identifier. If omitted, uses albums assigned with frame_device_set.
+      selector:
+        text:
+    album_ids:
+      name: Album IDs
+      description: Optional list of albums. If omitted, uses albums assigned with frame_device_set.
+      selector:
+        object:
+    direction:
+      name: Direction
+      description: Move to next/prev image or keep current.
+      default: next
+      selector:
+        select:
+          options:
+            - next
+            - prev
+            - stay
+    width:
+      name: Width
+      description: Preview width for cached image files.
+      default: 800
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    height:
+      name: Height
+      description: Preview height for cached image files.
+      default: 480
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    image_format:
+      name: Image format
+      description: Image format for generated cache files.
+      default: jpeg
+      selector:
+        select:
+          options:
+            - jpeg
+            - bmp24
+    randomize:
+      name: Randomize
+      description: Shuffle album photos when loading state.
+      default: true
+      selector:
+        boolean:
+    force_reload:
+      name: Force reload
+      description: Force reloading the album list for this device.
+      default: false
+      selector:
+        boolean:
+    max_photos:
+      name: Max photos
+      description: Max photos to hold in memory state for this device.
+      default: 500
+      selector:
+        number:
+          min: 1
+          max: 5000
+          mode: box
+    max_cache_files:
+      name: Max cache files
+      description: Max files kept under /config/www/nextcloud_memories/<device_key>.
+      default: 40
+      selector:
+        number:
+          min: 5
+          max: 500
+          mode: box
+    prefetch_each_side:
+      name: Prefetch each side
+      description: Number of previous and next photos to keep cached around the current one.
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 20
+          mode: box
+    target_current_text_entity:
+      name: Current text entity
+      description: Optional text.* entity to receive current URL (legacy push mode).
+      selector:
+        entity:
+          domain: text
+    target_prev_text_entity:
+      name: Prev text entity
+      description: Optional text.* entity to receive previous URL.
+      selector:
+        entity:
+          domain: text
+    target_next_text_entity:
+      name: Next text entity
+      description: Optional text.* entity to receive next URL.
+      selector:
+        entity:
+          domain: text
+    entry_id:
+      name: Entry ID
+      description: Optional config entry ID if you have multiple Nextcloud Memories entries.
+      selector:
+        text:
+
+frame_reset:
+  name: Frame reset
+  description: Resets in-memory state for one device key.
+  fields:
+    device_key:
+      name: Device key
+      description: Device state key to reset.
+      required: true
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: Optional config entry ID if you have multiple Nextcloud Memories entries.
+      selector:
+        text:
+
+frame_device_set:
+  name: Frame device set
+  description: Creates or updates one logical photoframe device with assigned albums and defaults.
+  fields:
+    device_key:
+      name: Device key
+      description: Unique logical device key (typically ESP device name).
+      required: true
+      selector:
+        text:
+    name:
+      name: Name
+      description: Friendly name shown in the device registry.
+      selector:
+        text:
+    album_ids:
+      name: Album IDs
+      description: One or more album identifiers (cluster_id values from get_albums).
+      required: true
+      selector:
+        object:
+    width:
+      name: Width
+      default: 800
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    height:
+      name: Height
+      default: 480
+      selector:
+        number:
+          min: 16
+          max: 4096
+          mode: box
+    image_format:
+      name: Image format
+      description: Image format for generated cache files.
+      default: jpeg
+      selector:
+        select:
+          options:
+            - jpeg
+            - bmp24
+    randomize:
+      name: Randomize
+      default: true
+      selector:
+        boolean:
+    max_photos:
+      name: Max photos
+      default: 500
+      selector:
+        number:
+          min: 1
+          max: 5000
+          mode: box
+    max_cache_files:
+      name: Max cache files
+      default: 40
+      selector:
+        number:
+          min: 5
+          max: 500
+          mode: box
+    prefetch_each_side:
+      name: Prefetch each side
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 20
+          mode: box
+    rotation_minutes:
+      name: Rotation minutes
+      description: Automatic rotation period in minutes (1-30).
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 30
+          mode: slider
+    presence_entity_id:
+      name: Presence entity
+      description: Optional occupancy or presence entity controlling the linked ESPHome LCD backlight.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+            - domain: input_boolean
+    target_current_text_entity:
+      name: Current text entity
+      selector:
+        entity:
+          domain: text
+    target_prev_text_entity:
+      name: Prev text entity
+      selector:
+        entity:
+          domain: text
+    target_next_text_entity:
+      name: Next text entity
+      selector:
+        entity:
+          domain: text
+    entry_id:
+      name: Entry ID
+      selector:
+        text:
+
+frame_device_list:
+  name: Frame device list
+  description: Lists configured logical photoframe devices.
+  fields:
+    entry_id:
+      name: Entry ID
+      selector:
+        text:
+
+frame_device_delete:
+  name: Frame device delete
+  description: Deletes one logical photoframe device configuration.
+  fields:
+    device_key:
+      name: Device key
+      required: true
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      selector:
+        text:
