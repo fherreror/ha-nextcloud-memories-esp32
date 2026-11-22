@@ -3,7 +3,8 @@
 ## [Unreleased]
 
 - Prepare the existing integration for GitHub, Marketplace/HACS and offline CI tests.
-- No intended behavior changes to Home Assistant/Nextcloud integration code.
+- Replace deprecated device registry APIs with the 2026+ single-config-entry API, preserving ESPHome frame lookups.
+- Add offline regression tests for MAC and LCD backlight resolution.
 
 ## [0.1.0] - Initial existing implementation
 
