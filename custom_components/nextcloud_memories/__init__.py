@@ -27,6 +27,13 @@ from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
 
 from .api import NextcloudMemoriesClient
+from .presence import (
+    PRESENCE_REQUIRE_ON,
+    PRESENCE_REQUIRE_OFF,
+    normalize_condition_entities,
+    presence_conditions_met,
+    presence_conditions_valid,
+)
 from .const import (
     CACHE_DIR_NAME,
     CONF_API_TOKEN,
@@ -182,6 +189,8 @@ SERVICE_FRAME_DEVICE_SET_SCHEMA = vol.Schema(
             int, vol.Range(min=1, max=30)
         ),
         vol.Optional("presence_entity_id"): str,
+        vol.Optional(PRESENCE_REQUIRE_ON): [str],
+        vol.Optional(PRESENCE_REQUIRE_OFF): [str],
         vol.Optional("target_current_text_entity"): str,
         vol.Optional("target_prev_text_entity"): str,
         vol.Optional("target_next_text_entity"): str,
@@ -645,6 +654,18 @@ def _register_services(hass: HomeAssistant) -> None:
         if not album_ids:
             raise ServiceValidationError("album_ids must contain at least one album")
 
+        presence_entity_id = str(call.data.get("presence_entity_id") or "").strip() or None
+        required_on = normalize_condition_entities(
+            call.data.get(PRESENCE_REQUIRE_ON), presence_entity_id
+        ) if presence_entity_id else []
+        required_off = normalize_condition_entities(
+            call.data.get(PRESENCE_REQUIRE_OFF), presence_entity_id
+        ) if presence_entity_id else []
+        if not presence_conditions_valid({
+            PRESENCE_REQUIRE_ON: required_on,
+            PRESENCE_REQUIRE_OFF: required_off,
+        }):
+            raise ServiceValidationError("A prerequisite cannot require both on and off")
         profile = {
             "device_key": device_key,
             "esp_device_id": esp_device_id,
@@ -660,7 +681,9 @@ def _register_services(hass: HomeAssistant) -> None:
             "max_cache_files": int(call.data.get("max_cache_files", 40)),
             "prefetch_each_side": int(call.data.get("prefetch_each_side", 5)),
             "rotation_minutes": int(call.data.get("rotation_minutes", DEFAULT_ROTATION_MINUTES)),
-            "presence_entity_id": str(call.data.get("presence_entity_id") or "").strip() or None,
+            "presence_entity_id": presence_entity_id,
+            PRESENCE_REQUIRE_ON: required_on,
+            PRESENCE_REQUIRE_OFF: required_off,
             "target_current_text_entity": call.data.get("target_current_text_entity"),
             "target_prev_text_entity": call.data.get("target_prev_text_entity"),
             "target_next_text_entity": call.data.get("target_next_text_entity"),
@@ -946,7 +969,7 @@ def _sync_rotation_tasks(hass: HomeAssistant, entry: MemoriesConfigEntry) -> Non
 
 
 def _sync_presence_listeners(hass: HomeAssistant, entry: MemoriesConfigEntry) -> None:
-    """Link optional presence entities to the ESPHome LCD backlight."""
+    """Watch presence and prerequisites for automatic LCD backlight control."""
     runtime = entry.runtime_data
     for unsub in runtime.presence_unsubs:
         unsub()
@@ -956,20 +979,24 @@ def _sync_presence_listeners(hass: HomeAssistant, entry: MemoriesConfigEntry) ->
         presence_entity_id = str(profile.get("presence_entity_id") or "").strip()
         if not presence_entity_id:
             continue
+        watched = set([presence_entity_id])
+        watched.update(normalize_condition_entities(profile.get(PRESENCE_REQUIRE_ON)))
+        watched.update(normalize_condition_entities(profile.get(PRESENCE_REQUIRE_OFF)))
 
         @callback
-        def _presence_changed(event: Any, key: str = device_key) -> None:
-            new_state = event.data.get("new_state")
-            if new_state is None:
+        def _state_changed(event: Any, key: str = device_key) -> None:
+            current_profile = entry.runtime_data.frame_devices.get(key, {})
+            source = str(current_profile.get("presence_entity_id") or "").strip()
+            current = hass.states.get(source)
+            if current is None:
                 return
             hass.async_create_task(
-                _async_apply_presence_backlight(hass, entry, key, new_state.state)
+                _async_apply_presence_backlight(hass, entry, key, current.state)
             )
 
         runtime.presence_unsubs.append(
-            async_track_state_change_event(hass, [presence_entity_id], _presence_changed)
+            async_track_state_change_event(hass, list(watched), _state_changed)
         )
-
         current = hass.states.get(presence_entity_id)
         if current is not None:
             hass.async_create_task(
@@ -983,10 +1010,18 @@ async def _async_apply_presence_backlight(
     device_key: str,
     presence_state: str,
 ) -> None:
-    """Apply an on/off presence state to the linked ESPHome backlight."""
+    """Apply presence OFF regardless of prerequisites, and gate presence ON."""
     if presence_state not in (STATE_ON, STATE_OFF):
         return
     profile = entry.runtime_data.frame_devices.get(device_key, {})
+    if presence_state == STATE_ON and not presence_conditions_met(
+        profile,
+        lambda entity_id: (
+            state.state if (state := hass.states.get(entity_id)) is not None else None
+        ),
+    ):
+        return
+
     backlight_entity_id = _resolve_esp_backlight_entity(
         hass, str(profile.get("esp_device_id") or "").strip() or None
     )
@@ -1005,49 +1040,6 @@ async def _async_apply_presence_backlight(
             profile.get("presence_entity_id"),
             exc,
         )
-
-
-def _resolve_esp_backlight_entity(
-    hass: HomeAssistant, esp_device_id: str | None
-) -> str | None:
-    """Resolve the backlight switch belonging to the linked ESPHome device."""
-    esp_mac = resolve_esp_device_mac(hass, esp_device_id)
-    if not esp_mac:
-        return None
-
-    device_reg = dr.async_get(hass)
-    entity_reg = er.async_get(hass)
-    candidates: list[str] = []
-    for device in device_reg.devices:
-        connections = {
-            str(value).lower()
-            for conn_type, value in device.connections
-            if conn_type == dr.CONNECTION_NETWORK_MAC
-        }
-        if esp_mac.lower() not in connections:
-            continue
-        config_entry_id = device.config_entry_id
-        config_entry = (
-            hass.config_entries.async_get_entry(config_entry_id)
-            if config_entry_id is not None
-            else None
-        )
-        is_esphome = config_entry is not None and config_entry.domain == "esphome"
-        if not is_esphome:
-            continue
-        for entity in er.async_entries_for_device(entity_reg, device.id):
-            if entity.domain != "switch" or entity.platform != "esphome":
-                continue
-            label = " ".join(
-                filter(None, (entity.original_name, entity.name, entity.entity_id))
-            ).lower()
-            if "backlight" in label:
-                candidates.append(entity.entity_id)
-
-    if not candidates:
-        return None
-    candidates.sort(key=lambda entity_id: ("lcd" not in entity_id.lower(), entity_id))
-    return candidates[0]
 
 
 def _restart_rotation_task(hass: HomeAssistant, entry: MemoriesConfigEntry, device_key: str) -> None:
