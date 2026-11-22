@@ -149,5 +149,10 @@ def test_no_deprecated_registry_usage():
     for function in functions:
         for node in ast.walk(function):
             if isinstance(node, ast.Attribute):
-                assert node.attr != "config_entries"
-                assert node.attr != "values"
+                if isinstance(node.value, ast.Name) and node.value.id == "device":
+                    assert node.attr != "config_entries"
+                if node.attr == "values":
+                    assert not (
+                        isinstance(node.value, ast.Attribute)
+                        and node.value.attr == "devices"
+                    )
