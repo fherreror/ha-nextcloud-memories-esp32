@@ -12,7 +12,7 @@
           "image_base_url": "URL base de las imágenes"
         },
         "data_description": {
-          "base_url": "Dirección del servidor Nextcloud accesible desde Home Assistant, sin /apps/memories (por ejemplo, https://nube.ejemplo.com).",
+          "base_url": "Dirección del servidor Nextcloud accesible desde Home Assistant. Introduce su dirección base sin /apps/memories.",
           "username": "Usuario de Nextcloud con acceso a los álbumes que quieras mostrar.",
           "api_token": "Es preferible utilizar una contraseña de aplicación de Nextcloud, en lugar de la contraseña habitual de tu cuenta.",
           "verify_ssl": "Comprueba el certificado HTTPS del servidor. Desactívalo solo si conoces las implicaciones de seguridad.",
