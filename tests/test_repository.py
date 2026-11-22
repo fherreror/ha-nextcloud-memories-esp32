@@ -14,7 +14,7 @@ def test_manifest_and_hacs_metadata():
     manifest = json.loads((INTEGRATION / "manifest.json").read_text())
     hacs = json.loads((ROOT / "hacs.json").read_text())
     assert manifest["domain"] == INTEGRATION.name
-    assert re.fullmatch("[0-9]+[.][0-9]+[.][0-9]+", manifest["version"])
+    assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:b[0-9]+)?", manifest["version"])
     assert manifest["config_flow"] is True
     assert manifest["documentation"].startswith("https://github.com/fherreror/")
     assert manifest["issue_tracker"].startswith("https://github.com/fherreror/")
