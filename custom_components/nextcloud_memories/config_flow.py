@@ -12,6 +12,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
+from homeassistant import data_entry_flow
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
@@ -19,6 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import NextcloudMemoriesClient
+from .presence import normalize_condition_entities
 from .const import (
     CONF_API_TOKEN,
     CONF_BASE_URL,
@@ -149,7 +151,9 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
             action = str(user_input.get("action", "")).strip() or "create"
             target = str(user_input.get("target_device_key", "")).strip()
 
-            if action in ("edit", "delete") and not target:
+            if action in ("edit", "delete") and target not in devices:
+                errors["target_device_key"] = "required_target_device"
+            elif action in ("edit", "delete") and not target:
                 errors["target_device_key"] = "required_target_device"
             elif action == "delete":
                 if target in devices:
@@ -205,6 +209,21 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
+            presence_entity_id = str(user_input.get("presence_entity_id") or "").strip() or None
+            presence_require_on = normalize_condition_entities(
+                user_input.get("presence_require_on_entities"), presence_entity_id
+            )
+            presence_require_off = normalize_condition_entities(
+                user_input.get("presence_require_off_entities"), presence_entity_id
+            )
+            if set(presence_require_on) & set(presence_require_off):
+                errors["presence_require_off_entities"] = "conflicting_presence_conditions"
+                return self.async_show_form(
+                    step_id="device",
+                    data_schema=self._device_schema(user_input, album_options, esp_device_options),
+                    errors=errors,
+                )
+
             profile = {
                 "device_key": device_key,
                 "esp_device_id": _sanitize_esp_device_id(str(user_input.get("esp_device_id", "")) or None),
@@ -218,7 +237,9 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                 "max_cache_files": int(user_input.get("max_cache_files", 80)),
                 "prefetch_each_side": int(user_input.get("prefetch_each_side", 5)),
                 "rotation_minutes": int(user_input.get("rotation_minutes", DEFAULT_ROTATION_MINUTES)),
-                "presence_entity_id": str(user_input.get("presence_entity_id") or "").strip() or None,
+                "presence_entity_id": presence_entity_id,
+                "presence_require_on_entities": presence_require_on,
+                "presence_require_off_entities": presence_require_off,
             }
 
             if self._action == "edit" and self._source_device_key and self._source_device_key != device_key:
@@ -255,11 +276,14 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
         )
 
     def _step_init_schema(self, devices: dict[str, Any]) -> vol.Schema:
-        options = [
-            {"value": "create", "label": "Create"},
-            {"value": "edit", "label": "Edit"},
-            {"value": "delete", "label": "Delete"},
-        ]
+        options = [{"value": "create", "label": "Create"}]
+        if devices:
+            options.extend(
+                (
+                    {"value": "edit", "label": "Edit"},
+                    {"value": "delete", "label": "Delete"},
+                )
+            )
 
         target_selector: Any = str
         if devices:
@@ -294,7 +318,10 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                         custom_value=False,
                     )
                 ),
-                vol.Optional("target_device_key", default=""): target_selector,
+                data_entry_flow.Optional(
+                    "target_device_key",
+                    visible={"field": "action", "operator": "in", "value": ["edit", "delete"]},
+                ): target_selector,
             }
         )
 
@@ -387,6 +414,30 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                         domain=["binary_sensor", "input_boolean"]
                     )
                 ),
+                data_entry_flow.Optional(
+                    "presence_require_on_entities",
+                    description={
+                        "suggested_value": list(defaults.get("presence_require_on_entities") or [])
+                    },
+                    visible={"field": "presence_entity_id", "operator": "exists"},
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["binary_sensor", "input_boolean", "switch"],
+                        multiple=True,
+                    )
+                ),
+                data_entry_flow.Optional(
+                    "presence_require_off_entities",
+                    description={
+                        "suggested_value": list(defaults.get("presence_require_off_entities") or [])
+                    },
+                    visible={"field": "presence_entity_id", "operator": "exists"},
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["binary_sensor", "input_boolean", "switch"],
+                        multiple=True,
+                    )
+                ),
             }
         )
 
@@ -424,6 +475,8 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                     "prefetch_each_side": int(p.get("prefetch_each_side", 5)),
                     "rotation_minutes": int(p.get("rotation_minutes", DEFAULT_ROTATION_MINUTES)),
                     "presence_entity_id": p.get("presence_entity_id"),
+                    "presence_require_on_entities": list(p.get("presence_require_on_entities") or []),
+                    "presence_require_off_entities": list(p.get("presence_require_off_entities") or []),
                 }
         return {
             "device_key": "",
@@ -439,6 +492,8 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
             "prefetch_each_side": 5,
             "rotation_minutes": DEFAULT_ROTATION_MINUTES,
             "presence_entity_id": None,
+            "presence_require_on_entities": [],
+            "presence_require_off_entities": [],
         }
 
     async def _async_get_album_options(self) -> dict[str, str]:
