@@ -1042,6 +1042,49 @@ async def _async_apply_presence_backlight(
         )
 
 
+def _resolve_esp_backlight_entity(
+    hass: HomeAssistant, esp_device_id: str | None
+) -> str | None:
+    """Resolve the backlight switch belonging to the linked ESPHome device."""
+    esp_mac = resolve_esp_device_mac(hass, esp_device_id)
+    if not esp_mac:
+        return None
+
+    device_reg = dr.async_get(hass)
+    entity_reg = er.async_get(hass)
+    candidates: list[str] = []
+    for device in device_reg.devices:
+        connections = {
+            str(value).lower()
+            for conn_type, value in device.connections
+            if conn_type == dr.CONNECTION_NETWORK_MAC
+        }
+        if esp_mac.lower() not in connections:
+            continue
+        config_entry_id = device.config_entry_id
+        config_entry = (
+            hass.config_entries.async_get_entry(config_entry_id)
+            if config_entry_id is not None
+            else None
+        )
+        is_esphome = config_entry is not None and config_entry.domain == "esphome"
+        if not is_esphome:
+            continue
+        for entity in er.async_entries_for_device(entity_reg, device.id):
+            if entity.domain != "switch" or entity.platform != "esphome":
+                continue
+            label = " ".join(
+                filter(None, (entity.original_name, entity.name, entity.entity_id))
+            ).lower()
+            if "backlight" in label:
+                candidates.append(entity.entity_id)
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda entity_id: ("lcd" not in entity_id.lower(), entity_id))
+    return candidates[0]
+
+
 def _restart_rotation_task(hass: HomeAssistant, entry: MemoriesConfigEntry, device_key: str) -> None:
     runtime = entry.runtime_data
     old = runtime.frame_rotation_tasks.pop(device_key, None)
