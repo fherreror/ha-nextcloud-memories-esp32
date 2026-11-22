@@ -269,28 +269,18 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="device",
             data_schema=self._device_schema(profile_defaults, album_options, esp_device_options),
-            description_placeholders={
-                "mode": "Edit" if self._action == "edit" else "Create",
-                "device": self._source_device_key or "new",
-            },
         )
 
     def _step_init_schema(self, devices: dict[str, Any]) -> vol.Schema:
-        options = [{"value": "create", "label": "Create"}]
+        options = ["create"]
         if devices:
-            options.extend(
-                (
-                    {"value": "edit", "label": "Edit"},
-                    {"value": "delete", "label": "Delete"},
-                )
-            )
+            options.extend(("edit", "delete"))
 
         target_selector: Any = str
         if devices:
             target_selector = selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
-                        {"value": "", "label": "(None)"},
                         *[
                             {"value": key, "label": str(devices.get(key, {}).get("name") or key)}
                             for key in sorted(devices.keys())
@@ -316,6 +306,7 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                         options=options,
                         multiple=False,
                         custom_value=False,
+                        translation_key="frame_action",
                     )
                 ),
                 data_entry_flow.Optional(
@@ -383,11 +374,12 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional("image_format", default=str(defaults.get("image_format", "jpeg"))): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[
-                            {"value": "jpeg", "label": "JPEG (baseline)"},
-                            {"value": "bmp24", "label": "BMP 24-bit"},
+                            "jpeg",
+                            "bmp24",
                         ],
                         multiple=False,
                         custom_value=False,
+                        translation_key="frame_image_format",
                     )
                 ),
                 vol.Optional("randomize", default=bool(defaults.get("randomize", True))): bool,
