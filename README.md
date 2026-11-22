@@ -84,6 +84,10 @@ La integración se configura **desde Home Assistant**. No hace falta editar arch
 
 **Álbumes:** se admiten varios álbumes para un mismo marco. El selector consulta Nextcloud para mostrar sus nombres e identificadores; un identificador habitual es `usuario/Nombre del álbum`. Si no se puede cargar la lista, el formulario conserva las selecciones ya guardadas. Comprueba que el usuario de Nextcloud tiene acceso a los álbumes.
 
+**Condiciones adicionales del sensor de presencia (Home Assistant 2026.11+):** al seleccionar una entidad de presencia se muestran los campos **Entities required ON** y **Entities required OFF**. Puedes seleccionar varios `binary_sensor`, `input_boolean` o `switch` en cada grupo. Para encender la retroiluminación automáticamente deben cumplirse **todas** las condiciones: las primeras en `on`, las segundas en `off`. Los estados `unknown`, `unavailable` y las entidades sin estado bloquean el encendido (comportamiento seguro). Las condiciones no bloquean el apagado por ausencia. Al cambiar una condición se reevalúa la presencia; si sigue siendo `on` y pasan todas, se podrá encender la retroiluminación. No selecciones la misma entidad en ambos grupos. Si no configuras sensor de presencia, estos campos se ocultan y no tienen efecto.
+
+**Interfaz condicional:** en el paso inicial, el selector de dispositivo solo aparece al elegir **Edit** o **Delete**. El formulario de configuración del marco muestra las condiciones adicionales únicamente cuando se ha elegido una entidad de presencia. La visibilidad dinámica requiere **Home Assistant Core 2026.11 o posterior**.
+
 **Presencia:** para controlar la retroiluminación debe existir en el dispositivo ESPHome un interruptor `switch` identificado por Home Assistant cuyo nombre incluya **backlight**; la integración prefiere uno que incluya además **lcd**. Solo actúa ante `on` y `off`. Este ajuste no crea por sí mismo el interruptor físico.
 
 ### 4. Comprobar el marco y manejar las fotografías
@@ -162,6 +166,10 @@ El proyecto contiene [tests](tests/) con respuestas simuladas de API. No hacen c
 Para ejecutar los tests localmente (Python 3.13): instala `pytest`, `aiohttp` y `pyyaml`, y ejecuta `pytest -q` desde la raíz. La integración que se instala en HA no requiere `pytest`.
 
 Los tests verifican normalización de álbumes/fotos, autenticación preparada, construcción de solicitudes y consistencia de archivos de empaquetado; no garantizan compatibilidad con todas las versiones de la API Nextcloud Memories ni prueban el ESP32 físico.
+
+## Seguridad y análisis estático
+
+GitHub Actions ejecuta validación HACS/Marketplace, Hassfest, comprobaciones de Python y tests offline. Además, **CodeQL** analiza el código Python cuando se abre o actualiza un Pull Request, cuando hay cambios en `main` y de forma programada cada semana. CodeQL es análisis estático: no se conecta a tu servidor Nextcloud y sus resultados no sustituyen las pruebas de integración en un Home Assistant real.
 
 ## Versiones y actualizaciones
 
