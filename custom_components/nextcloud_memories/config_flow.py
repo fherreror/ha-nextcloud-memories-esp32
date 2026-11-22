@@ -211,13 +211,13 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
 
             presence_entity_id = str(user_input.get("presence_entity_id") or "").strip() or None
             presence_require_on = normalize_condition_entities(
-                user_input.get("presence_require_on"), presence_entity_id
+                user_input.get("presence_require_on_entities"), presence_entity_id
             )
             presence_require_off = normalize_condition_entities(
-                user_input.get("presence_require_off"), presence_entity_id
+                user_input.get("presence_require_off_entities"), presence_entity_id
             )
             if set(presence_require_on) & set(presence_require_off):
-                errors["presence_require_off"] = "conflicting_presence_conditions"
+                errors["presence_require_off_entities"] = "conflicting_presence_conditions"
                 return self.async_show_form(
                     step_id="device",
                     data_schema=self._device_schema(user_input, album_options, esp_device_options),
@@ -238,8 +238,8 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                 "prefetch_each_side": int(user_input.get("prefetch_each_side", 5)),
                 "rotation_minutes": int(user_input.get("rotation_minutes", DEFAULT_ROTATION_MINUTES)),
                 "presence_entity_id": presence_entity_id,
-                "presence_require_on": presence_require_on,
-                "presence_require_off": presence_require_off,
+                "presence_require_on_entities": presence_require_on,
+                "presence_require_off_entities": presence_require_off,
             }
 
             if self._action == "edit" and self._source_device_key and self._source_device_key != device_key:
@@ -415,9 +415,9 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                     )
                 ),
                 data_entry_flow.Optional(
-                    "presence_require_on",
+                    "presence_require_on_entities",
                     description={
-                        "suggested_value": list(defaults.get("presence_require_on") or [])
+                        "suggested_value": list(defaults.get("presence_require_on_entities") or [])
                     },
                     visible={"field": "presence_entity_id", "operator": "exists"},
                 ): selector.EntitySelector(
@@ -427,9 +427,9 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                     )
                 ),
                 data_entry_flow.Optional(
-                    "presence_require_off",
+                    "presence_require_off_entities",
                     description={
-                        "suggested_value": list(defaults.get("presence_require_off") or [])
+                        "suggested_value": list(defaults.get("presence_require_off_entities") or [])
                     },
                     visible={"field": "presence_entity_id", "operator": "exists"},
                 ): selector.EntitySelector(
@@ -475,8 +475,8 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
                     "prefetch_each_side": int(p.get("prefetch_each_side", 5)),
                     "rotation_minutes": int(p.get("rotation_minutes", DEFAULT_ROTATION_MINUTES)),
                     "presence_entity_id": p.get("presence_entity_id"),
-                    "presence_require_on": list(p.get("presence_require_on") or []),
-                    "presence_require_off": list(p.get("presence_require_off") or []),
+                    "presence_require_on_entities": list(p.get("presence_require_on_entities") or []),
+                    "presence_require_off_entities": list(p.get("presence_require_off_entities") or []),
                 }
         return {
             "device_key": "",
@@ -492,8 +492,8 @@ class NextcloudMemoriesOptionsFlow(config_entries.OptionsFlow):
             "prefetch_each_side": 5,
             "rotation_minutes": DEFAULT_ROTATION_MINUTES,
             "presence_entity_id": None,
-            "presence_require_on": [],
-            "presence_require_off": [],
+            "presence_require_on_entities": [],
+            "presence_require_off_entities": [],
         }
 
     async def _async_get_album_options(self) -> dict[str, str]:
