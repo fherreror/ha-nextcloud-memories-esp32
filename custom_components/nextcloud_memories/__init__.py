@@ -1018,7 +1018,7 @@ def _resolve_esp_backlight_entity(
     device_reg = dr.async_get(hass)
     entity_reg = er.async_get(hass)
     candidates: list[str] = []
-    for device in device_reg.devices.values():
+    for device in device_reg.devices:
         connections = {
             str(value).lower()
             for conn_type, value in device.connections
@@ -1026,13 +1026,13 @@ def _resolve_esp_backlight_entity(
         }
         if esp_mac.lower() not in connections:
             continue
-        is_esphome = any(
-            (
-                (cfg := hass.config_entries.async_get_entry(entry_id)) is not None
-                and cfg.domain == "esphome"
-            )
-            for entry_id in device.config_entries
+        config_entry_id = device.config_entry_id
+        config_entry = (
+            hass.config_entries.async_get_entry(config_entry_id)
+            if config_entry_id is not None
+            else None
         )
+        is_esphome = config_entry is not None and config_entry.domain == "esphome"
         if not is_esphome:
             continue
         for entity in er.async_entries_for_device(entity_reg, device.id):
@@ -1101,7 +1101,7 @@ def resolve_esp_device_mac(hass: HomeAssistant, esp_device_id: str | None) -> st
     target_canon = _canon(target)
 
     device_reg = dr.async_get(hass)
-    for device in device_reg.devices.values():
+    for device in device_reg.devices:
         names: list[str] = []
         if device.name:
             names.append(device.name)
@@ -1129,13 +1129,13 @@ def resolve_esp_device_mac(hass: HomeAssistant, esp_device_id: str | None) -> st
             continue
 
         # Prefer devices that truly belong to ESPHome integration.
-        is_esphome = any(
-            (
-                (cfg := hass.config_entries.async_get_entry(entry_id)) is not None
-                and cfg.domain == "esphome"
-            )
-            for entry_id in device.config_entries
+        config_entry_id = device.config_entry_id
+        config_entry = (
+            hass.config_entries.async_get_entry(config_entry_id)
+            if config_entry_id is not None
+            else None
         )
+        is_esphome = config_entry is not None and config_entry.domain == "esphome"
         if not (is_esphome or name_match):
             continue
 
