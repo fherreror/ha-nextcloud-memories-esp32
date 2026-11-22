@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.1.1] - Unreleased
+## [0.1.1] - 2026-11-22
 
 - Add Spanish translations for setup and frame configuration forms.
 - Explain frame options, presence backlight behavior, and ON/OFF prerequisites in both languages.
