@@ -2,15 +2,18 @@
 
 ## [Unreleased]
 
-- Prepare the existing integration for GitHub, Marketplace/HACS and offline CI tests.
-- Replace deprecated device registry APIs with the 2026+ single-config-entry API, preserving ESPHome frame lookups.
-- Add offline regression tests for MAC and LCD backlight resolution.
-- Add per-frame ON/OFF prerequisite entities for presence-controlled backlights, with fail-closed evaluation and rechecks on prerequisite changes.
-- Show the frame target and prerequisite fields dynamically in Home Assistant 2026.11+ options forms.
-- Add Python CodeQL security analysis to pull requests, main branch updates, and a weekly schedule.
-- Extend offline tests and configuration documentation.
+## [0.1.0] - 2026-11-22
 
-## [0.1.0] - Initial existing implementation
+First public release of the Nextcloud Memories ESP32 integration for Home Assistant.
 
-- Nextcloud Memories album browsing, preview caching and ESPHome photo frames.
-- Frame controls, sensors, rotation and presence/backlight support.
+- Connect Home Assistant to Nextcloud Memories albums and configure ESPHome/ESP32 photo frames.
+- Browse albums, cache and prepare JPEG/BMP24 images, prefetch adjacent photos, and rotate photos automatically.
+- Provide frame sensors, next/previous/shuffle buttons, rotation interval controls, and actions for managing frames.
+- Support presence-controlled LCD backlights, including per-frame prerequisites requiring selected entities to be ON or OFF; reevaluate when prerequisites change.
+- Show the target frame only when editing/deleting and show prerequisite selectors only when presence is configured (Home Assistant 2026.11+).
+- Update device registry access for compatibility with newer Home Assistant releases.
+- Use the standard `custom_components/nextcloud_memories` repository layout for Marketplace/HACS.
+- Add English translations, integration branding, installation documentation, and the MIT license.
+- Add offline regression tests, HACS/Hassfest/Python CI, and CodeQL security analysis.
+
+**Testing note:** Offline checks pass. Manual testing has confirmed startup and integration loading in Home Assistant 2026.11.2; all presence prerequisite combinations have not yet been exercised on physical frames.
