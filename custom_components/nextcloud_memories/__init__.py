@@ -20,6 +20,7 @@ from homeassistant.const import Platform, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -61,6 +62,8 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 IMAGE_FORMATS = ("jpeg", "bmp24")
 DEFAULT_IMAGE_FORMAT = "jpeg"
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 try:
     from PIL import Image, ImageFilter, ImageOps  # type: ignore

@@ -16,7 +16,7 @@ Integración comunitaria para **Home Assistant** que utiliza álbumes de **Nextc
 
 ## Requisitos
 
-- Home Assistant con soporte para integraciones personalizadas.
+- **Home Assistant Core 2026.11.0 o posterior**. Esta versión es necesaria para mostrar campos de configuración condicionales; el requisito se declara también en `hacs.json` para Marketplace/HACS.
 - Nextcloud con la aplicación **Memories** instalada y accesible por red **desde Home Assistant**; no tiene que ser accesible desde Internet.
 - Usuario de Nextcloud y una contraseña de aplicación/token con acceso a los álbumes deseados.
 - Para mostrar imágenes, un ESP32 con ESPHome y una pantalla configurada para solicitar las URL de las imágenes servidas por Home Assistant. **No incluye firmware ESPHome**.
@@ -30,6 +30,8 @@ Integración comunitaria para **Home Assistant** que utiliza álbumes de **Nextc
 5. Desde las opciones de la integración, crea los dispositivos de marco y selecciona los álbumes y dispositivos ESPHome correspondientes.
 
 ## Configuración paso a paso
+
+La integración incluye **traducciones al español y al inglés**, con descripciones de ayuda en los formularios. El idioma mostrado depende de la configuración de idioma de Home Assistant.
 
 La integración se configura **desde Home Assistant**. No hace falta editar archivos YAML ni publicar Nextcloud en Internet. Hay dos partes: **conexión con Nextcloud Memories** y **configuración de cada marco ESP32**.
 

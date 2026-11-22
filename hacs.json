@@ -1,3 +1,4 @@
 {
-  "name": "Nextcloud Memories ESP32"
+  "name": "Nextcloud Memories ESP32",
+  "homeassistant": "2026.11.0"
 }
