@@ -13,8 +13,10 @@ PRESENCE_REQUIRE_ON = "presence_require_on_entities"
 PRESENCE_REQUIRE_OFF = "presence_require_off_entities"
 
 
-def normalize_condition_entities(value: Any) -> list[str]:
+def normalize_condition_entities(value: Any, presence_entity_id: str | None = None) -> list[str]:
     """Normalize a multi-entity selection while preserving its order."""
+    if not presence_entity_id and presence_entity_id is not None:
+        return []
     if value is None:
         return []
     if isinstance(value, str):
@@ -25,7 +27,7 @@ def normalize_condition_entities(value: Any) -> list[str]:
         dict.fromkeys(
             str(item).strip()
             for item in value
-            if isinstance(item, str) and item.strip()
+            if isinstance(item, str) and item.strip() and item.strip() != presence_entity_id
         )
     )
 
